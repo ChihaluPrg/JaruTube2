@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="指定チャンネルのYouTube動画を快適に視聴できるカスタムビューアー">
+    <meta name="keywords" content="YouTube, ビューアー, カスタム, チャンネル">
+    <meta name="theme-color" content="#ff0000">
+    <title>JaruTube - プレミアムチャンネルビューアー</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>JaruTube <span class="premium">Premium</span></h1>
+            </div>
+            <div class="search-container">
+                <input type="text" id="channel-id" placeholder="チャンネルID または ユーザー名を入力" aria-label="チャンネルIDまたはユーザー名">
+                <button id="search-button" aria-label="検索"><i class="fas fa-search"></i> 検索</button>
+            </div>
+            <div class="theme-toggle">
+                <button id="theme-toggle-btn" aria-label="ダークモード切替">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="sort-filter-container" class="hidden">
+            <div class="sort-options">
+                <label for="sort-select">並び替え:</label>
+                <select id="sort-select" aria-label="並び替えオプション">
+                    <option value="date">新しい順</option>
+                    <option value="viewCount">再生回数順</option>
+                    <option value="rating">高評価順</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="channel-info" class="hidden">
+            <div id="channel-header">
+                <img id="channel-thumbnail" src="" alt="チャンネルサムネイル">
+                <div id="channel-details">
+                    <h2 id="channel-title"></h2>
+                    <div class="channel-stats">
+                        <p id="subscriber-count"></p>
+                        <p id="video-count"></p>
+                    </div>
+                    <p id="channel-description"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="loader" class="hidden">
+            <div class="spinner"></div>
+        </div>
+
+        <div id="error-container" class="hidden">
+            <div class="error-message">
+                <i class="fas fa-exclamation-circle"></i>
+                <p id="error-text"></p>
+                <button id="retry-button">再試行</button>
+            </div>
+        </div>
+
+        <div id="videos-container" class="videos-grid"></div>
+
+        <div id="load-more-container" class="hidden">
+            <button id="load-more">もっと見る <i class="fas fa-chevron-down"></i></button>
+        </div>
+    </main>
+
+    <div id="video-modal" class="modal hidden" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+        <div class="modal-overlay"></div>
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3 id="modal-title"></h3>
+                <button class="modal-close" aria-label="閉じる"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="video-player-container">
+                    <div id="video-player"></div>
+                </div>
+                <div class="video-details">
+                    <div class="video-stats">
+                        <span id="modal-view-count"></span>
+                        <span id="modal-publish-date"></span>
+                    </div>
+                    <p id="modal-description"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="container">
+        <div class="footer-content">
+            <p>&copy; 2025 JaruTube Premium</p>
+            <div class="footer-links">
+                <a href="#" aria-label="このサービスについて">このサービスについて</a>
+                <a href="#" aria-label="プライバシーポリシー">プライバシーポリシー</a>
+                <a href="#" aria-label="お問い合わせ">お問い合わせ</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
