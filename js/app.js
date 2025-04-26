@@ -4,6 +4,18 @@ const API_KEY = 'AIzaSyDlkXxT6mEx8Iw1pF4Ku8wlznIU5SQPoC4'; // 実際のAPIキー
 // デフォルトのチャンネルID
 const DEFAULT_CHANNEL_ID = 'UChwgNUWPM-ksOP3BbfQHS5Q';
 
+// プリセットチャンネル
+const PRESET_CHANNELS = {
+    'channel1': {
+        id: 'UChwgNUWPM-ksOP3BbfQHS5Q',
+        title: 'ジャルジャルタワー'
+    },
+    'channel2': {
+        id: 'UCf-wG6PlxW7rpixx1tmODJw',
+        title: 'ジャルジャルアイランド'
+    }
+};
+
 // DOM要素
 const channelIdInput = document.getElementById('channel-id');
 const searchButton = document.getElementById('search-button');
@@ -29,6 +41,9 @@ const modalClose = document.querySelector('.modal-close');
 const modalDescription = document.getElementById('modal-description');
 const modalViewCount = document.getElementById('modal-view-count');
 const modalPublishDate = document.getElementById('modal-publish-date');
+// チャンネル切り替えボタン
+const channel1Btn = document.getElementById('channel-1-btn');
+const channel2Btn = document.getElementById('channel-2-btn');
 
 // グローバル変数
 let channelId = '';
@@ -39,6 +54,7 @@ let currentVideoData = {};
 let isDarkMode = false;
 let videosCache = new Map();
 let channelCache = new Map();
+let currentActiveChannelBtn = null;
 
 // ページ読み込み時の初期化
 document.addEventListener('DOMContentLoaded', initialize);
@@ -55,6 +71,9 @@ channelIdInput.addEventListener('keypress', function(event) {
         searchChannel();
     }
 });
+// チャンネル切り替えボタンのイベントリスナー
+channel1Btn.addEventListener('click', () => switchChannel('channel1'));
+channel2Btn.addEventListener('click', () => switchChannel('channel2'));
 
 // モーダルの外側をクリックしたら閉じる
 document.addEventListener('click', function(event) {
@@ -70,16 +89,77 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// テーマ設定の復元
+// テーマ設定の復元とチャンネル初期化
 function initialize() {
     // ローカルストレージからテーマ設定を復元
     if (localStorage.getItem('theme') === 'dark') {
         setDarkMode(true);
     }
     
-    // 指定されたチャンネルIDのコンテンツを初期表示
-    channelIdInput.value = DEFAULT_CHANNEL_ID;
+    // 最後に視聴したチャンネルを復元するか、デフォルトを使用
+    const lastChannel = localStorage.getItem('lastChannel') || 'channel1';
+    switchChannel(lastChannel);
+    
+    // チャンネルボタンのラベルを設定
+    updateChannelButtonLabels();
+}
+
+// チャンネルボタンのラベルを更新
+function updateChannelButtonLabels() {
+    channel1Btn.querySelector('i').className = 'fas fa-tv';
+    channel1Btn.innerHTML = `<i class="fas fa-tv"></i> ${PRESET_CHANNELS.channel1.title || 'チャンネル1'}`;
+    
+    channel2Btn.querySelector('i').className = 'fas fa-tv';
+    channel2Btn.innerHTML = `<i class="fas fa-tv"></i> ${PRESET_CHANNELS.channel2.title || 'チャンネル2'}`;
+}
+
+// チャンネル切り替え
+function switchChannel(channelKey) {
+    if (!PRESET_CHANNELS[channelKey]) return;
+    
+    // 以前のアクティブボタンから active クラスを削除
+    if (currentActiveChannelBtn) {
+        currentActiveChannelBtn.classList.remove('active');
+    }
+    
+    // 対応するボタンをアクティブにする
+    const buttonId = channelKey === 'channel1' ? 'channel-1-btn' : 'channel-2-btn';
+    const activeButton = document.getElementById(buttonId);
+    activeButton.classList.add('active');
+    currentActiveChannelBtn = activeButton;
+    
+    // チャンネルIDを検索フィールドに設定
+    channelIdInput.value = PRESET_CHANNELS[channelKey].id;
+    
+    // チャンネル情報を取得
     searchChannel();
+    
+    // 最後に使用したチャンネルを保存
+    localStorage.setItem('lastChannel', channelKey);
+}
+
+// チャンネル情報を取得し、チャンネル名を更新
+async function fetchChannelTitle(channelKey) {
+    const channelId = PRESET_CHANNELS[channelKey].id;
+    try {
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=snippet&id=${channelId}&key=${API_KEY}`);
+        
+        if (!response.ok) {
+            throw new Error(`API応答エラー: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.items && data.items.length > 0) {
+            const title = data.items[0].snippet.title;
+            // チャンネル名を保存
+            PRESET_CHANNELS[channelKey].title = title;
+            // ボタンラベルを更新
+            updateChannelButtonLabels();
+        }
+    } catch (error) {
+        console.error('チャンネル名取得エラー:', error);
+    }
 }
 
 // チャンネル検索と初期ビデオロード
@@ -206,6 +286,16 @@ async function getChannelInfo(channelId) {
             
             // ページタイトルを更新
             document.title = `${channel.snippet.title} - JaruTube Premium`;
+            
+            // チャンネル名を対応するプリセットボタンに設定
+            for (const key in PRESET_CHANNELS) {
+                if (PRESET_CHANNELS[key].id === channelId) {
+                    PRESET_CHANNELS[key].title = channel.snippet.title;
+                }
+            }
+            
+            // ボタンラベルを更新
+            updateChannelButtonLabels();
         }
     } catch (error) {
         console.error('チャンネル情報取得エラー:', error);
